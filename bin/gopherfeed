@@ -3,32 +3,103 @@
 # Published under the terms of the BSD 3-Clause License
 # (see LICENSE file or http://opensource.org/licenses/BSD-3-Clause)
 
+import feedparser
+
 import gopherfeed
 
 import codecs
 import getopt
+import os
 import sys
 
 def usage():
     print """Usage: gopherfeed feed_url [gophermap_filename]"""
 
-def main():
-    opts, args = getopt.gnu_getopt(sys.argv[1:], "")
-    if len(args) not in (1,2):
-        usage()
-        sys.exit(2)
-    feed_url = args[0]
+def make_slug(feed):
+    if "title" in feed.feed:
+        slug = feed.feed.title
+	for kill in ".,:;-\"\'\`\\/".split():
+    	    slug = slug.replace(kill,"_")
+	slug = slug.replace(" ","_")
+	slug = slug.lower()
+    else:
+	slug = feed.feed.link
+    return slug
+
+def read_feed_urls(filename):
+   
+    feeds = []
+    try:
+        fp = codecs.open(filename, "r", "UTF-8")
+	for line in fp:
+	    if not line.startswith("#"):
+                feeds.append(line)
+    except IOError as e:
+        print "Could not read feed URLs from file %s: %s" % (filename, e.strerror)
+        exit(1)
+    finally:
+        fp.close()
+    return feeds
+
+def process_feed_file(feedfile, directory, hostname, port=70):
+    feeds = read_feed_urls(feedfile)
+    fp = codecs.open(directory+"/"+"gophermap", "w", "UTF-8")
+    for feed_url in feeds:
+	feed = feedparser.parse(feed_url)
+	if "title" not in feed.feed:
+    	    continue
+	feed_slug = make_slug(feed)
+	dir = directory + "/" + feed_slug
+	gophermap = dir + "/" + "gophermap"
+	if not os.path.exists(dir):
+    	    os.mkdir(dir)
+	fp.write("1%s\t%s\t%s\t%d\n" % (feed.feed.title, dir, hostname, port))
+	process_one_feed(feed_url, gophermap)
+    fp.close()
+
+def process_one_feed(feed_url, filename=None):
+
     gophermap = gopherfeed.gopherize_feed(feed_url)
-    if len(args) == 2:
-        filename = args[1]
+    if filename:
         try:
-            with codecs.open(filename, "w", "UTF-8") as fp:
-                fp.write(gophermap)
+            fp = codecs.open(filename, "w", "UTF-8")
+            fp.write(gophermap)
         except IOError as e:
             print "Could not write gophermap to file %s: %s" % (filename, e.strerror)
             exit(1)
+	finally:
+	    fp.close()
     else:
-        print gophermap
+	print gophermap
+
+def main():
+
+    feedfile = None
+    directory = None
+    hostname = None
+    opts, args = getopt.gnu_getopt(sys.argv[1:], "d:f:h:")
+    for option, value in opts:
+        if option == "-d":
+	    directory = value
+        elif option == "-f":
+	    feedfile = value
+        elif option == "-h":
+	    hostname = value
+
+    if feedfile and directory:
+	process_feed_file(feedfile, directory, hostname)
+    elif not feedfile and not directory and len(args) in (1,2):
+        feed_url = args[0]
+        if len(args) == 2:
+            process_one_feed(feed_url, args[1])
+	else:
+	    fp = sys.stdin
+	process_one_feed(feed_url, fp)
+	if filename:
+	    fp.close()
+    else:
+        usage()
+        sys.exit(2)
 
 if __name__ == "__main__":
     main()
