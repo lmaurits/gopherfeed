@@ -5,6 +5,7 @@
 
 import gopherfeed
 
+import codecs
 import getopt
 import sys
 
@@ -21,7 +22,7 @@ def main():
     if len(args) == 2:
         filename = args[1]
         try:
-            with open(filename, 'w') as fp:
+            with codecs.open(filename, "w", "UTF-8") as fp:
                 fp.write(gophermap)
         except IOError as e:
             print "Could not write gophermap to file %s: %s" % (filename, e.strerror)
