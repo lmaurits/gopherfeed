@@ -18,7 +18,8 @@ def usage():
 def make_slug(feed):
     if "title" in feed.feed:
         slug = feed.feed.title
-	for kill in ".,:;-\"\'\`\\/".split():
+	slug = slug.encode("ASCII", "ignore")
+	for kill in ".,:;-\"\'\`\\/":
     	    slug = slug.replace(kill,"_")
 	slug = slug.replace(" ","_")
 	slug = slug.lower()
