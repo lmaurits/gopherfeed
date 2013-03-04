@@ -10,7 +10,7 @@ import getopt
 import sys
 
 def usage():
-    print """Usage: gopherfeed feed_url [gophermap_filename]\n"""
+    print """Usage: gopherfeed feed_url [gophermap_filename]"""
 
 def main():
     opts, args = getopt.gnu_getopt(sys.argv[1:], "")
