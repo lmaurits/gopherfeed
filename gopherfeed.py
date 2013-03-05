@@ -69,7 +69,7 @@ def gopherize_feed_file(feedfile, directory, hostname, port=70):
         if not os.path.exists(directory):
             os.mkdir(directory)
         fp.write("1%s\t%s\t%s\t%d\n" % (feed.feed.title, directory, hostname, port))
-        fp2 = codecs.open(gophermap, "a", "UTF-8")
+        fp2 = codecs.open(gophermap, "w", "UTF-8")
         fp2.write(_gopherize_feed_object(feed))
         fp2.close()
     fp.close()
