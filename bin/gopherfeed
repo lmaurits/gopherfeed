@@ -3,16 +3,14 @@
 # Published under the terms of the BSD 3-Clause License
 # (see LICENSE file or http://opensource.org/licenses/BSD-3-Clause)
 
-import feedparser
-
 import gopherfeed
 
 import codecs
 import getopt
-import os
 import sys
 
 def usage():
+    """Print usage information."""
     print """Usage pattern 1: gopherfeed FEED_URL [GOPHERMAP_FILENAME]
     This will turn the feed at FEED_URL into a Gophermp and save it to GOPHER_FILENAME
     if specified or print it stdout if not.
@@ -24,7 +22,6 @@ def usage():
     also be created under GOPHER_DIR, using the hostname HOSTNAME."""
 
 def main():
-
     feedfile = None
     directory = None
     hostname = None
@@ -32,11 +29,11 @@ def main():
     opts, args = getopt.gnu_getopt(sys.argv[1:], "d:f:h:")
     for option, value in opts:
         if option == "-d":
-	    directory = value
+            directory = value
         elif option == "-f":
-	    feedfile = value
+            feedfile = value
         elif option == "-h":
-	    hostname = value
+            hostname = value
 
     if feedfile and directory:
         try:
@@ -44,10 +41,11 @@ def main():
         except IOError as e:
             print "Encountered error handling feed file: %s" % e.strerror
             exit(1)
-    elif not feedfile and not directory and len(args) in (1,2) and hostname:
+    elif not feedfile and not directory and len(args) in (1, 2) and hostname:
         feed_url = args[0]
         gophermap = gopherfeed.gopherize_feed(feed_url)
         if len(args) == 2:
+            filename = args[1]
             try:
                 fp = codecs.open(filename, "w", "UTF-8")
                 fp.write(gophermap)
@@ -56,8 +54,8 @@ def main():
                 exit(1)
             finally:
                 fp.close()
-	else:
-	    print gophermap
+        else:
+            print gophermap
     else:
         usage()
 
