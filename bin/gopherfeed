@@ -13,68 +13,22 @@ import os
 import sys
 
 def usage():
-    print """Usage: gopherfeed feed_url [gophermap_filename]"""
-
-def make_slug(feed):
-    slug = feed.feed.title
-    slug = slug.encode("ASCII", "ignore")
-    for kill in ".,:;-\"\'\`\\/":
-        slug = slug.replace(kill,"_")
-        slug = slug.replace(" ","_")
-        slug = slug.lower()
-    return slug
-
-def read_feed_urls(filename):
-   
-    feeds = []
-    try:
-        fp = codecs.open(filename, "r", "UTF-8")
-	for line in fp:
-	    if not line.startswith("#"):
-                feeds.append(line)
-    except IOError as e:
-        print "Could not read feed URLs from file %s: %s" % (filename, e.strerror)
-        exit(1)
-    finally:
-        fp.close()
-    return feeds
-
-def process_feed_file(feedfile, directory, hostname, port=70):
-    feeds = read_feed_urls(feedfile)
-    fp = codecs.open(directory+"/"+"gophermap", "w", "UTF-8")
-    for feed_url in feeds:
-	feed = feedparser.parse(feed_url)
-	if "title" not in feed.feed:
-    	    continue
-	feed_slug = make_slug(feed)
-	dir = directory + "/" + feed_slug
-	gophermap = dir + "/" + "gophermap"
-	if not os.path.exists(dir):
-    	    os.mkdir(dir)
-	fp.write("1%s\t%s\t%s\t%d\n" % (feed.feed.title, dir, hostname, port))
-	process_one_feed(feed_url, gophermap)
-    fp.close()
-
-def process_one_feed(feed_url, filename=None):
-
-    gophermap = gopherfeed.gopherize_feed(feed_url)
-    if filename:
-        try:
-            fp = codecs.open(filename, "w", "UTF-8")
-            fp.write(gophermap)
-        except IOError as e:
-            print "Could not write gophermap to file %s: %s" % (filename, e.strerror)
-            exit(1)
-	finally:
-	    fp.close()
-    else:
-	print gophermap
+    print """Usage pattern 1: gopherfeed FEED_URL [GOPHERMAP_FILENAME]
+    This will turn the feed at FEED_URL into a Gophermp and save it to GOPHER_FILENAME
+    if specified or print it stdout if not.
+    
+    Usage pattern 2: gopherfeed -f FEED_FILE -d GOPHER_DIR -h HOSTNAME
+    This will read feed URLs from FEED_FILE (one URL per line) and turn them all into
+    Gophermap files.  Each feed's Gophermap will end up in its own directory under
+    the directory GOPHER_DIR.  A master Goperhmap pointing to each of the feeds will
+    also be created under GOPHER_DIR, using the hostname HOSTNAME."""
 
 def main():
 
     feedfile = None
     directory = None
     hostname = None
+
     opts, args = getopt.gnu_getopt(sys.argv[1:], "d:f:h:")
     for option, value in opts:
         if option == "-d":
@@ -85,19 +39,29 @@ def main():
 	    hostname = value
 
     if feedfile and directory:
-	process_feed_file(feedfile, directory, hostname)
-    elif not feedfile and not directory and len(args) in (1,2):
+        try:
+            gopherfeed.gopherize_feed_file(feedfile, directory, hostname, port=70)
+        except IOError as e:
+            print "Encountered error handling feed file: %s" % e.strerror
+            exit(1)
+    elif not feedfile and not directory and len(args) in (1,2) and hostname:
         feed_url = args[0]
+        gophermap = gopherfeed.gopherize_feed(feed_url)
         if len(args) == 2:
-            process_one_feed(feed_url, args[1])
+            try:
+                fp = codecs.open(filename, "w", "UTF-8")
+                fp.write(gophermap)
+            except IOError as e:
+                print "Could not write gophermap to file %s: %s" % (filename, e.strerror)
+                exit(1)
+            finally:
+                fp.close()
 	else:
-	    fp = sys.stdin
-	process_one_feed(feed_url, fp)
-	if filename:
-	    fp.close()
+	    print gophermap
     else:
         usage()
-        sys.exit(2)
+
+    sys.exit(0)
 
 if __name__ == "__main__":
     main()
