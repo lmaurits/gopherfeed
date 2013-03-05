@@ -16,15 +16,12 @@ def usage():
     print """Usage: gopherfeed feed_url [gophermap_filename]"""
 
 def make_slug(feed):
-    if "title" in feed.feed:
-        slug = feed.feed.title
-	slug = slug.encode("ASCII", "ignore")
-	for kill in ".,:;-\"\'\`\\/":
-    	    slug = slug.replace(kill,"_")
-	slug = slug.replace(" ","_")
-	slug = slug.lower()
-    else:
-	slug = feed.feed.link
+    slug = feed.feed.title
+    slug = slug.encode("ASCII", "ignore")
+    for kill in ".,:;-\"\'\`\\/":
+        slug = slug.replace(kill,"_")
+        slug = slug.replace(" ","_")
+        slug = slug.lower()
     return slug
 
 def read_feed_urls(filename):
