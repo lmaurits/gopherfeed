@@ -35,13 +35,13 @@ def main():
         elif option == "-h":
             hostname = value
 
-    if feedfile and directory:
+    if feedfile and directory and hostname:
         try:
             gopherfeed.gopherize_feed_file(feedfile, directory, hostname, port=70)
         except IOError as e:
             print "Encountered error handling feed file: %s" % e.strerror
             exit(1)
-    elif not feedfile and not directory and len(args) in (1, 2) and hostname:
+    elif not feedfile and not directory and len(args) in (1, 2):
         feed_url = args[0]
         gophermap = gopherfeed.gopherize_feed(feed_url)
         if len(args) == 2:
