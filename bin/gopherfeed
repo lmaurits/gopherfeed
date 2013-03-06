@@ -11,7 +11,7 @@ import sys
 
 def usage():
     """Print usage information."""
-    print """Usage pattern 1: gopherfeed FEED_URL [GOPHERMAP_FILENAME]
+    print("""Usage pattern 1: gopherfeed FEED_URL [GOPHERMAP_FILENAME]
     This will turn the feed at FEED_URL into a Gophermp and save it to GOPHER_FILENAME
     if specified or print it stdout if not.
     
@@ -19,7 +19,7 @@ def usage():
     This will read feed URLs from FEED_FILE (one URL per line) and turn them all into
     Gophermap files.  Each feed's Gophermap will end up in its own directory under
     the directory GOPHER_DIR.  A master Goperhmap pointing to each of the feeds will
-    also be created under GOPHER_DIR, using the hostname HOSTNAME."""
+    also be created under GOPHER_DIR, using the hostname HOSTNAME.""")
 
 def main():
     feedfile = None
@@ -39,7 +39,7 @@ def main():
         try:
             gopherfeed.gopherize_feed_file(feedfile, directory, hostname, port=70)
         except IOError as e:
-            print "Encountered error handling feed file: %s" % e.strerror
+            print("Encountered error handling feed file: %s" % e.strerror)
             exit(1)
     elif not feedfile and not directory and len(args) in (1, 2):
         feed_url = args[0]
@@ -50,12 +50,12 @@ def main():
                 fp = codecs.open(filename, "w", "UTF-8")
                 fp.write(gophermap)
             except IOError as e:
-                print "Could not write gophermap to file %s: %s" % (filename, e.strerror)
+                print("Could not write gophermap to file %s: %s" % (filename, e.strerror))
                 exit(1)
             finally:
                 fp.close()
         else:
-            print gophermap
+            print(gophermap)
     else:
         usage()
 
