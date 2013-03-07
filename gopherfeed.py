@@ -77,6 +77,8 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
         hostname = socket.getfqdn()
     feeds = _read_feed_urls(feedfile)
     decorated_maplines = []
+    if not os.path.exists(directory):
+        os.mkdir(directory)
     fp = codecs.open(directory+"/"+"gophermap", "w", "UTF-8")
     for index, feed_url in enumerate(feeds):
         feed = feedparser.parse(feed_url)
