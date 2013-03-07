@@ -1,0 +1,12 @@
+v1.1 : March X 2013
+-------------------
+* Added option to alphabetically sort feeds when using feed file
+* Added option to timestamp entries
+* Auto-detect hostname 
+* Create base directory for feeds if it does not exist (feed file mode)
+* Don't assume entries appear in feed in chronological order
+
+v1.0 : March 5 2013
+-------------------
+Initial release.  Bare bones support for Gopherizing individual feeds and feed
+files.
