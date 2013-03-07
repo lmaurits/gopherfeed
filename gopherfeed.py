@@ -85,11 +85,11 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
         if "title" not in feed.feed:
             continue
         feed_slug = _slugify(feed.feed)
-        directory = directory + "/" + feed_slug
-        gophermap = directory + "/" + "gophermap"
-        if not os.path.exists(directory):
-            os.mkdir(directory)
-        mapline = "1%s\t%s\t%s\t%d\n" % (feed.feed.title, directory, hostname, port)
+        feed_dir = directory + "/" + feed_slug
+        gophermap = feed_dir + "/" + "gophermap"
+        if not os.path.exists(feed_dir):
+            os.mkdir(feed_dir)
+        mapline = "1%s\t%s\t%s\t%d\n" % (feed.feed.title, feed_dir, hostname, port)
         if sort == "alpha":
             decorated_maplines.append((feed.feed.title.lower(), mapline))
         else:
