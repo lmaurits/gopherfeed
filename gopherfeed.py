@@ -19,13 +19,21 @@ def _gopherize_feed_object(feed, timestamp=False):
     maplines.append("%s" % feed.feed.title.replace("\t","    "))
     if "description" in feed.feed:
         maplines.append(feed.feed.description.replace("\t","    "))
+    timestamped_maplines = []
     for entry in feed.entries:
         filetype = "h"
         descr = entry.title.replace("\t","   ")
         if timestamp:
             timestring = time.strftime(_TIME_FORMAT, entry.updated_parsed)
             descr = "[%s] %s" % (timestring, descr)
-        maplines.append("%s%s\tURL:%s" % (filetype, descr, entry.link))
+        mapline = "%s%s\tURL:%s" % (filetype, descr, entry.link)
+        timestamped_maplines.append((entry.updated_parsed, mapline))
+    # Entries are not guaranteed to appear in feed in chronological order,
+    # so let's sort them
+    timestamped_maplines.sort()
+    timestamped_maplines.reverse()
+    for updated, mapline in timestamped_maplines:
+        maplines.append(mapline)
     gophermap = "\n".join(maplines)
     return gophermap
 
