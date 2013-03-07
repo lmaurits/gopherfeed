@@ -55,7 +55,7 @@ def _read_feed_urls(filename):
     return feeds
 
 def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
-        timestamp=False):
+        sort=None, timestamp=False):
     """
     Read a file of URLs and generate a directory structure of gophermaps.
 
@@ -68,8 +68,9 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
     if not hostname:
         hostname = socket.getfqdn()
     feeds = _read_feed_urls(feedfile)
+    decorated_maplines = []
     fp = codecs.open(directory+"/"+"gophermap", "w", "UTF-8")
-    for feed_url in feeds:
+    for index, feed_url in enumerate(feeds):
         feed = feedparser.parse(feed_url)
         if "title" not in feed.feed:
             continue
@@ -78,8 +79,15 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
         gophermap = directory + "/" + "gophermap"
         if not os.path.exists(directory):
             os.mkdir(directory)
-        fp.write("1%s\t%s\t%s\t%d\n" % (feed.feed.title, directory, hostname, port))
+        mapline = "1%s\t%s\t%s\t%d\n" % (feed.feed.title, directory, hostname, port)
+        if sort == "alpha":
+            decorated_maplines.append((feed.feed.title.lower(), mapline))
+        else:
+            decorated_maplines.append((index, mapline))
         fp2 = codecs.open(gophermap, "w", "UTF-8")
         fp2.write(_gopherize_feed_object(feed, timestamp))
         fp2.close()
+    decorated_maplines.sort()
+    for decoration, mapline in decorated_maplines:
+        fp.write(mapline)
     fp.close()

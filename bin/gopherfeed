@@ -31,8 +31,9 @@ def main():
     feedfile = None
     directory = None
     hostname = None
+    sort = None
     timestamp = False
-    opts, args = getopt.gnu_getopt(sys.argv[1:], "d:f:h:t")
+    opts, args = getopt.gnu_getopt(sys.argv[1:], "d:f:h:s:t")
     for option, value in opts:
         if option == "-d":
             directory = value
@@ -40,13 +41,19 @@ def main():
             feedfile = value
         elif option == "-h":
             hostname = value
+        elif option == "-s":
+            sort = value
         elif option == "-t":
             timestamp = True
+
+    if sort not in (None, "alpha"):
+        sys.stderr.write("Ignoring unknown sort option: %s\n" % sort)
+        sort = None
 
     if feedfile and directory:
         try:
             gopherfeed.gopherize_feed_file(feedfile, directory, hostname,
-                    port=70, timestamp=True)
+                    port=70, sort=sort, timestamp=True)
         except IOError as e:
             print("Encountered error handling feed file: %s" % e.strerror)
             exit(1)
