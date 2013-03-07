@@ -43,7 +43,7 @@ def main():
         elif option == "-t":
             timestamp = True
 
-    if feedfile and directory and hostname:
+    if feedfile and directory:
         try:
             gopherfeed.gopherize_feed_file(feedfile, directory, hostname,
                     port=70, timestamp=True)

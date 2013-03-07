@@ -65,6 +65,8 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
     master gophermap file at the root of the directory structure which acts
     as an index to the others (using each feed's title as the descriptor).
     """
+    if not hostname:
+        hostname = socket.getfqdn()
     feeds = _read_feed_urls(feedfile)
     fp = codecs.open(directory+"/"+"gophermap", "w", "UTF-8")
     for feed_url in feeds:
