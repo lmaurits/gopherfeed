@@ -6,8 +6,12 @@ import feedparser
 
 import codecs
 import os
+import socket
+import time
 
-def _gopherize_feed_object(feed):
+_TIME_FORMAT = "%Y-%m-%d %H:%M"
+
+def _gopherize_feed_object(feed, timestamp=False):
     """Return a gophermap string for a feed object produced by feedparser."""
     maplines = []
     if "title" not in feed.feed:
@@ -18,13 +22,16 @@ def _gopherize_feed_object(feed):
     for entry in feed.entries:
         filetype = "h"
         descr = entry.title.replace("\t","   ")
+        if timestamp:
+            timestring = time.strftime(_TIME_FORMAT, entry.updated_parsed)
+            descr = "[%s] %s" % (timestring, descr)
         maplines.append("%s%s\tURL:%s" % (filetype, descr, entry.link))
     gophermap = "\n".join(maplines)
     return gophermap
 
-def gopherize_feed(feed_url):
+def gopherize_feed(feed_url, timestamp=False):
     """Return a gophermap string for the feed at feed_url."""
-    return _gopherize_feed_object(feedparser.parse(feed_url))
+    return _gopherize_feed_object(feedparser.parse(feed_url), timestamp)
 
 def _slugify(feed):
     """Make a simple string from feed title, to use as a directory name."""
@@ -47,7 +54,8 @@ def _read_feed_urls(filename):
     fp.close()
     return feeds
 
-def gopherize_feed_file(feedfile, directory, hostname, port=70):
+def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
+        timestamp=False):
     """
     Read a file of URLs and generate a directory structure of gophermaps.
 
@@ -70,6 +78,6 @@ def gopherize_feed_file(feedfile, directory, hostname, port=70):
             os.mkdir(directory)
         fp.write("1%s\t%s\t%s\t%d\n" % (feed.feed.title, directory, hostname, port))
         fp2 = codecs.open(gophermap, "w", "UTF-8")
-        fp2.write(_gopherize_feed_object(feed))
+        fp2.write(_gopherize_feed_object(feed, timestamp))
         fp2.close()
     fp.close()
