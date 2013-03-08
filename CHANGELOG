@@ -1,8 +1,10 @@
-v1.1 : March X 2013
+v1.1 : March 7 2013
 -------------------
 * Added option to alphabetically sort feeds when using feed file
+* Added option to chronolgically sort feeds when using feed file
+* Added option to specify ports other than 70 for index gophermap
 * Added option to timestamp entries
-* Auto-detect hostname 
+* Auto-detect hostname if none specified
 * Create base directory for feeds if it does not exist (feed file mode)
 * Don't assume entries appear in feed in chronological order
 
