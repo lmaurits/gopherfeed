@@ -7,7 +7,7 @@ except ImportError:
 
 setup(
     name='gopherfeed',
-    version='1.0',
+    version='1.1',
     description='Convert RSS or Atom feeds to gophermap files',
     author='Luke Maurits',
     author_email='luke@maurits.id.au',
