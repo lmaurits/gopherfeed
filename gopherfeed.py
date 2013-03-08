@@ -12,16 +12,21 @@ import time
 feedparser.USER_AGENT = "Gopherfeed +https://github.com/lmaurits/gopherfeed"
 _TIME_FORMAT = "%Y-%m-%d %H:%M"
 
-def _gopherize_feed_object(feed, timestamp=False):
+def _gopherize_feed_object(feed_obj, timestamp=False):
     """Return a gophermap string for a feed object produced by feedparser."""
-    maplines = []
-    if "title" not in feed.feed:
+    feed, entries = feed_obj.feed, feed_obj.entries
+    if not entries:
         return ""
-    maplines.append("%s" % feed.feed.title.replace("\t","    "))
-    if "description" in feed.feed:
-        maplines.append(feed.feed.description.replace("\t","    "))
+
+    maplines = []
+    feed_title = feed.get("title", feed.get("link", "Untitled feed"))
+    feed_title = feed_title.replace("\t","    ")
+    maplines.append(feed_title)
+    if "description" in feed:
+        maplines.append(feed.description.replace("\t","    "))
+    
     timestamped_maplines = []
-    for entry in feed.entries:
+    for entry in entries:
         filetype = "h"
         descr = entry.title.replace("\t","   ")
         if timestamp:
@@ -29,14 +34,14 @@ def _gopherize_feed_object(feed, timestamp=False):
             descr = "[%s] %s" % (timestring, descr)
         mapline = "%s%s\tURL:%s" % (filetype, descr, entry.link)
         timestamped_maplines.append((entry.updated_parsed, mapline))
+
     # Entries are not guaranteed to appear in feed in chronological order,
     # so let's sort them
     timestamped_maplines.sort()
     timestamped_maplines.reverse()
     for updated, mapline in timestamped_maplines:
         maplines.append(mapline)
-    gophermap = "\n".join(maplines)
-    return gophermap
+    return "\n".join(maplines)
 
 def gopherize_feed(feed_url, timestamp=False):
     """Return a gophermap string for the feed at feed_url."""
