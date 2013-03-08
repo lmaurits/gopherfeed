@@ -91,9 +91,9 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
             os.mkdir(feed_dir)
         descr = feed.feed.title.replace("\t", "    ")
         mre = max([entry.updated_parsed for entry in feed.entries])
-        if timestamp:
-            timestring = time.strftime(_TIME_FORMAT, mre)
-            descr = "[%s] %s" % (timestring, descr)
+#        if timestamp:
+#            timestring = time.strftime(_TIME_FORMAT, mre)
+#            descr = "[%s] %s" % (timestring, descr)
         mapline = "1%s\t%s\t%s\t%d\n" % (descr, feed_dir, hostname, port)
         if sort == "alpha":
             decorated_maplines.append((feed.feed.title.lower(), mapline))
