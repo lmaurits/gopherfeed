@@ -9,6 +9,7 @@ import os
 import socket
 import time
 
+feedparser.USER_AGENT = "Gopherfeed +https://github.com/lmaurits/gopherfeed"
 _TIME_FORMAT = "%Y-%m-%d %H:%M"
 
 def _gopherize_feed_object(feed, timestamp=False):
