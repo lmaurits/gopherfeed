@@ -46,7 +46,7 @@ def main():
         elif option == "-t":
             timestamp = True
 
-    if sort not in (None, "alpha"):
+    if sort not in (None, "alpha", "time"):
         sys.stderr.write("Ignoring unknown sort option: %s\n" % sort)
         sort = None
 

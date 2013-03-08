@@ -89,15 +89,24 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
         gophermap = feed_dir + "/" + "gophermap"
         if not os.path.exists(feed_dir):
             os.mkdir(feed_dir)
-        mapline = "1%s\t%s\t%s\t%d\n" % (feed.feed.title, feed_dir, hostname, port)
+        descr = feed.feed.title.replace("\t", "    ")
+        mre = max([entry.updated_parsed for entry in feed.entries])
+        if timestamp:
+            timestring = time.strftime(_TIME_FORMAT, mre)
+            descr = "[%s] %s" % (timestring, descr)
+        mapline = "1%s\t%s\t%s\t%d\n" % (descr, feed_dir, hostname, port)
         if sort == "alpha":
             decorated_maplines.append((feed.feed.title.lower(), mapline))
+        elif sort == "time":
+            decorated_maplines.append((mre, mapline))
         else:
             decorated_maplines.append((index, mapline))
         fp2 = codecs.open(gophermap, "w", "UTF-8")
         fp2.write(_gopherize_feed_object(feed, timestamp))
         fp2.close()
     decorated_maplines.sort()
+    if sort == "time":
+        decorated_maplines.reverse()
     for decoration, mapline in decorated_maplines:
         fp.write(mapline)
     fp.close()
