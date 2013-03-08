@@ -83,9 +83,6 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
         hostname = socket.getfqdn()
     feeds = _read_feed_urls(feedfile)
     decorated_maplines = []
-    if not os.path.exists(directory):
-        os.mkdir(directory)
-    fp = codecs.open(directory+"/"+"gophermap", "w", "UTF-8")
     for index, feed_url in enumerate(feeds):
         feed = feedparser.parse(feed_url)
         if "title" not in feed.feed:
@@ -113,6 +110,10 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
     decorated_maplines.sort()
     if sort == "time":
         decorated_maplines.reverse()
+
+    if not os.path.exists(directory):
+        os.mkdir(directory)
+    fp = codecs.open(directory+"/"+"gophermap", "w", "UTF-8")
     for decoration, mapline in decorated_maplines:
         fp.write(mapline)
     fp.close()
