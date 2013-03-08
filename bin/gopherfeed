@@ -55,7 +55,7 @@ def main():
             gopherfeed.gopherize_feed_file(feedfile, directory, hostname,
                     port=70, sort=sort, timestamp=True)
         except IOError as e:
-            print("Encountered error handling feed file: %s" % e.strerror)
+            sys.stderr.write("Encountered error handling feed file: %s" % e.strerror)
             exit(1)
     elif not feedfile and not directory and len(args) in (1, 2):
         feed_url = args[0]
@@ -66,7 +66,7 @@ def main():
                 fp = codecs.open(filename, "w", "UTF-8")
                 fp.write(gophermap)
             except IOError as e:
-                print("Could not write gophermap to file %s: %s" % (filename, e.strerror))
+                sys.stderr.write("Could not write gophermap to file %s: %s" % (filename, e.strerror))
                 exit(1)
             finally:
                 fp.close()
