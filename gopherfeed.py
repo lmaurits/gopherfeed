@@ -88,8 +88,8 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
         if "title" not in feed.feed:
             continue
         feed_slug = _slugify(feed.feed)
-        feed_dir = directory + "/" + feed_slug
-        gophermap = feed_dir + "/" + "gophermap"
+        feed_dir = os.path.join(directory, feed_slug)
+        gophermap = os.path.join(feed_dir, "gophermap")
         if not os.path.exists(feed_dir):
             os.mkdir(feed_dir)
         descr = feed.feed.title.replace("\t", "    ")
@@ -113,7 +113,7 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
 
     if not os.path.exists(directory):
         os.mkdir(directory)
-    fp = codecs.open(directory+"/"+"gophermap", "w", "UTF-8")
+    fp = codecs.open(os.path.join(directory, "gophermap"), "w", "UTF-8")
     for decoration, mapline in decorated_maplines:
         fp.write(mapline)
     fp.close()
