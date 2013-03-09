@@ -5,9 +5,11 @@ try:
 except ImportError:
     from distutils.core import setup
 
+from gopherfeed import __version__ as version
+
 setup(
     name='gopherfeed',
-    version='1.1',
+    version=version,
     description='Convert RSS or Atom feeds to gophermap files',
     author='Luke Maurits',
     author_email='luke@maurits.id.au',
