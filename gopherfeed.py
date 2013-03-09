@@ -43,6 +43,14 @@ def _gopherize_feed_object(feed_obj, timestamp=False):
     timestamped_maplines.reverse()
     for updated, mapline in timestamped_maplines:
         maplines.append(mapline)
+    if feed_obj.version.startswith("rss"):
+        feed_type = "RSS feed"
+    elif feed_obj.version.startswith("atom"):
+        feed_type = "Atom feed"
+    else:
+        feed_type = "Unknown feed type"
+    maplines.append("-"*70)
+    maplines.append("Converted from %s by Gopherfeed %s" % (feed_type, __version__))
     return "\n".join(maplines)
 
 def gopherize_feed(feed_url, timestamp=False):
