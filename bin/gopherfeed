@@ -51,6 +51,8 @@ import codecs
 import getopt
 import os
 import sys
+import urllib2
+import xml
 
 def usage():
     """Print usage information."""
