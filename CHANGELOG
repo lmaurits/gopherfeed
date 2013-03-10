@@ -1,3 +1,12 @@
+v1.2 : March x 2013
+-------------------
+* Set feedparser User Agent to Gopherfeed
+* Print Gopherfeed version number footer at bottom of gopermaps
+ (disable with -x)
+* Insert blank line between feed title/description and first entry
+* Better reporting of errors
+* Extensive code tidy up and restructuring
+
 v1.1 : March 7 2013
 -------------------
 * Added option to alphabetically sort feeds when using feed file
