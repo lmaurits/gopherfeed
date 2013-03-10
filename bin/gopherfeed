@@ -59,17 +59,33 @@ def usage():
     """Print usage information."""
     print(__doc__)
 
+def _detect_error(feed_object):
+    """Return True if something appears to have gone wrong in parsing a feed."""
+    return not feed_object.entries
+
+def _express_error(feed_object, feed_url):
+    """Write a message to stderr describing what went wrong with feed_object."""
+    if feed_object.get("status", None) not in (200, None):
+        strerror = "Error fetching feed at %s (HTTP status %d)" % (feed_url, feed_object.status)
+    elif isinstance(feed_object.get("bozo_exception", None),urllib2.URLError):
+        strerror = "Error fetching feed at %s (%s)" % (feed_url, str(feed_object.bozo_exception))
+    elif isinstance(feed_object.get("bozo_exception", None), xml.sax._exceptions.SAXParseException):
+        strerror = "Error parsing feed at %s (are you sure this is a feed?)" % (feed_url,)
+    else:
+        strerror = "Feed at %s seems to be empty - skipping." % (feed_url,)
+    sys.stderr.write(strerror + "\n")
+
 def gopherize_one_feed(feed_url, filename, timestamp, plug):
     """
     Build a gophermap for the feed at feed_url and either save it to a file
     or print it to standard output.
     """
-    try:
-        gophermap = gopherfeed.gopherize_feed(feed_url, timestamp=timestamp,
-                plug=plug)
-    except Exception as e:
-        sys.stderr.write("Problem fetching or parsing feed: %s\n" % feed_url)
+    feed_object = feedparser.parse(feed_url)
+    if _detect_error(feed_object):
+        _express_error(feed_object, feed_url)
         exit(1)
+    gophermap = gopherfeed.gopherize_feed_object(feed_object,
+            timestamp=timestamp, plug=plug)
     if filename:
         try:
             with codecs.open(filename, "w", "UTF-8") as fp:
@@ -110,15 +126,8 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
     feed_objects = []
     for feed_url in feed_urls:
         feed_object = feedparser.parse(feed_url)
-        if not feed_object.entries:
-            if feed_object.get("status", None) not in (200, None):
-                sys.stderr.write("Error fetching feed at %s (HTTP status %d)\n" % (feed_url, feed_object.status))
-            elif isinstance(feed_object.get("bozo_exception", None), urllib2.URLError):
-                sys.stderr.write("Error fetching feed at %s (%s)\n" % (feed_url, str(feed_object.bozo_exception)))
-            elif isinstance(feed_object.get("bozo_exception", None), xml.sax._exceptions.SAXParseException):
-                sys.stderr.write("Error parsing feed at %s (are you sure this is a feed?)\n" % (feed_url,))
-            else:
-                sys.stderr.write("Feed at %s seems to be empty - skipping.\n" % (feed_url,))
+        if _detect_error(feed_object):
+            _express_error(feed_object, feed_url)
             continue
         feed_slug = gopherfeed._slugify(feed_object.feed)
         gophermap_dir = os.path.join(directory, feed_slug)
