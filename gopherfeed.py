@@ -24,7 +24,7 @@ def gopherize_feed_object(feed_obj, timestamp=False, plug=True):
     feed_title = feed.get("title", feed.get("link", "Untitled feed"))
     feed_title = feed_title.replace("\t","    ")
     maplines.append(feed_title)
-    if "description" in feed:
+    if feed.get("description", None):
         maplines.append(feed.description.replace("\t","    "))
     maplines.append("")
     
