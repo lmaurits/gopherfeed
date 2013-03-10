@@ -143,7 +143,7 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
             continue
         feed_objects.append(feed_object)
     try:
-        gopherfeed.build_feed_index(feed_objects, directory, hostname, port, sort)
+        gopherfeed.build_feed_index(feed_objects, directory, hostname, port, sort, plug)
     except IOError as e:
         sys.stderr.write("Could not write gophermap file %s: %s\n" % (os.path.join(directory, "gophermap"), e.strerror))
         exit(1)
