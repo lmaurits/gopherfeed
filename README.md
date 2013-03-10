@@ -17,6 +17,8 @@ Options for feed file (2nd usage pattern):
 
     -h HOSTNAME         Specify hostname to use in central index Gophermap
                             (defaults to FQDN of current machine)
+    -i INDEX_HEADER     Specify a header to print at the top of the central
+                            index Gophermap
     -p PORT             Specify port to use in central index Gophermap
                             (defaults to 70)
     -s SORT             Specify order in which feeds are listed in central

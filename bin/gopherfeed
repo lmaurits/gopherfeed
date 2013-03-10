@@ -15,6 +15,8 @@ Options for feed file (2nd usage pattern):
 
     -h HOSTNAME         Specify hostname to use in central index Gophermap
                             (defaults to FQDN of current machine)
+    -i INDEX_HEADER     Specify a header to print at the top of the central
+                            index Gophermap
     -p PORT             Specify port to use in central index Gophermap
                             (defaults to 70)
     -s SORT             Specify order in which feeds are listed in central
@@ -65,11 +67,12 @@ def _detect_error(feed_object):
 
 def _express_error(feed_object, feed_url):
     """Write a message to stderr describing what went wrong with feed_object."""
+    bozoex = feed_object.get("bozo_exception", None)
     if feed_object.get("status", None) not in (200, None):
         strerror = "Error fetching feed at %s (HTTP status %d)" % (feed_url, feed_object.status)
-    elif isinstance(feed_object.get("bozo_exception", None), urllib2.URLError):
-        strerror = "Error fetching feed at %s (%s)" % (feed_url, str(feed_object.bozo_exception))
-    elif isinstance(feed_object.get("bozo_exception", None), xml.sax._exceptions.SAXParseException):
+    elif isinstance(bozoex, urllib2.URLError):
+        strerror = "Error fetching feed at %s (%s)" % (feed_url, str(bozoex))
+    elif isinstance(bozoex, xml.sax._exceptions.SAXParseException):
         strerror = "Error parsing feed at %s (are you sure this is a feed?)" % (feed_url,)
     else:
         strerror = "Feed at %s seems to be empty - skipping." % (feed_url,)
@@ -107,8 +110,8 @@ def _read_feed_urls(filename):
     fp.close()
     return feeds
 
-def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
-        sort=None, timestamp=False, plug=True):
+def gopherize_feed_file(feedfile, directory, header=None, hostname=None,
+        port=70, sort=None, timestamp=False, plug=True):
     """
     Read a file of URLs and generate a directory structure of gophermaps.
 
@@ -121,7 +124,8 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
     try:
         feed_urls = _read_feed_urls(feedfile)
     except IOError as e:
-        sys.stderr.write("Could not open URL file %s: %s\n" % (feedfile, e.strerror))
+        sys.stderr.write("Could not open URL file %s: %s\n" % (feedfile,
+            e.strerror))
         exit(1)
     feed_objects = []
     for feed_url in feed_urls:
@@ -132,7 +136,8 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
         feed_slug = gopherfeed._slugify(feed_object.feed)
         gophermap_dir = os.path.join(directory, feed_slug)
         gophermap_file = os.path.join(gophermap_dir, "gophermap")
-        gophermap_text = gopherfeed.gopherize_feed_object(feed_object, timestamp, plug)
+        gophermap_text = gopherfeed.gopherize_feed_object(feed_object,
+                timestamp, plug)
         if not os.path.exists(gophermap_dir):
             os.makedirs(gophermap_dir)
         try:
@@ -143,7 +148,8 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
             continue
         feed_objects.append(feed_object)
     try:
-        gopherfeed.build_feed_index(feed_objects, directory, hostname, port, sort, plug)
+        gopherfeed.build_feed_index(feed_objects, directory, header, hostname,
+                port, sort, plug)
     except IOError as e:
         sys.stderr.write("Could not write gophermap file %s: %s\n" % (os.path.join(directory, "gophermap"), e.strerror))
         exit(1)
@@ -151,10 +157,11 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
 def main():
     """The gopherfeed command line application."""
 
-    # Without this, feedparser will happily wait until the heat death of the universe
-    # if something goes wrong connecting to a remote host
+    # Without this, feedparser will happily wait until the heat death of the
+    # universe if something goes wrong connecting to a remote host
     socket.setdefaulttimeout(30.0)
 
+    index_header = None
     feedfile = None
     directory = None
     hostname = None
@@ -162,7 +169,7 @@ def main():
     sort = None
     timestamp = False
     plug = True
-    opts, args = getopt.gnu_getopt(sys.argv[1:], "d:f:h:p:s:tx")
+    opts, args = getopt.gnu_getopt(sys.argv[1:], "d:f:h:i:p:s:tx")
     for option, value in opts:
         if option == "-d":
             directory = value
@@ -170,6 +177,8 @@ def main():
             feedfile = value
         elif option == "-h":
             hostname = value
+        elif option == "-i":
+            index_header = value
         elif option == "-p":
             port = int(value)
         elif option == "-s":
@@ -184,12 +193,14 @@ def main():
         sort = None
 
     if feedfile and directory:
-        gopherize_feed_file(feedfile, directory, hostname=hostname, port=port,
-                sort=sort, timestamp=timestamp, plug=plug)
+        gopherize_feed_file(feedfile, directory, header=index_header,
+                hostname=hostname, port=port, sort=sort, timestamp=timestamp,
+                plug=plug)
     elif not feedfile and not directory and len(args) in (1, 2):
         feed_url = args[0]
         if len(args) == 2:
-            gopherize_one_feed(feed_url, args[1], timestamp=timestamp, plug=plug)
+            gopherize_one_feed(feed_url, args[1], timestamp=timestamp,
+                    plug=plug)
         else:
             gopherize_one_feed(feed_url, None, timestamp=timestamp, plug=plug)
     else:

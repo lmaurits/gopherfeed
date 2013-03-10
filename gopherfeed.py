@@ -73,8 +73,8 @@ def _slugify(feed):
         slug = slug.lower()
     return slug
 
-def build_feed_index(feed_objects, directory, hostname=None, port=70, sort=None,
-        plug=True):
+def build_feed_index(feed_objects, directory, header=None, hostname=None,
+        port=70, sort=None, plug=True):
     """
     Build a gophermap file in the specified directory, which presents an index
     for all the feeds in feed_objects.
@@ -102,11 +102,12 @@ def build_feed_index(feed_objects, directory, hostname=None, port=70, sort=None,
     if not os.path.exists(directory):
         os.makedirs(directory)
     fp = codecs.open(os.path.join(directory, "gophermap"), "w", "UTF-8")
+    if header:
+        fp.write(header+"\n\n")
     for decoration, mapline in decorated_maplines:
         fp.write(mapline)
     if plug:
-        maplines.append("_"*70)
-        plug_line = "Converted from RSS/Atom feeds by Gopherfeed %s" % (feed_type, __version__)
-        maplines.append(plug_line.rjust(70))
-    maplines.append("")
+        fp.write("_"*70+"\n")
+        plug_line = "Converted from RSS/Atom feeds by Gopherfeed %s" % __version__
+        fp.write(plug_line.rjust(70) + "\n")
     fp.close()
