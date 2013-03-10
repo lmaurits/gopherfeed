@@ -2,7 +2,7 @@
 # Published under the terms of the BSD 3-Clause License
 # (see LICENSE file or http://opensource.org/licenses/BSD-3-Clause)
 
-__version__ = 1.1
+__version__ = 1.2
 
 import feedparser
 
