@@ -56,7 +56,6 @@ def gopherize_feed_object(feed_obj, timestamp=False, plug=True):
         plug_line = "Converted from %s by Gopherfeed %s" % (feed_type, __version__)
         maplines.append(plug_line.rjust(70))
 
-    maplines.append("")
     return "\n".join(maplines)
 
 def gopherize_feed(feed_url, timestamp=False, plug=True):

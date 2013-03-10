@@ -93,6 +93,7 @@ def gopherize_one_feed(feed_url, filename, timestamp, plug):
         try:
             with codecs.open(filename, "w", "UTF-8") as fp:
                 fp.write(gophermap)
+                fp.write("\n")
         except IOError as e:
             sys.stderr.write("Could not write gophermap to file %s: %s\n" % (filename, e.strerror))
             exit(1)
@@ -143,6 +144,7 @@ def gopherize_feed_file(feedfile, directory, header=None, hostname=None,
         try:
             with codecs.open(gophermap_file, "w", "UTF-8") as fp:
                 fp.write(gophermap_text)
+                fp.write("\n")
         except IOError as e:
             sys.stderr.write("Could not write gophermap file %s: %s\n" % (gophermap_file, e.strerror))
             continue
