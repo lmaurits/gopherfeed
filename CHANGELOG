@@ -1,11 +1,12 @@
 v1.2 : March x 2013
 -------------------
-* Set feedparser User Agent to Gopherfeed
+* Better reporting of per-feed errors
+* Extensive code tidy up and restructuring
+* Insert blank line between feed title/description and first entry
 * Print Gopherfeed version number footer at bottom of gopermaps
  (disable with -x)
-* Insert blank line between feed title/description and first entry
-* Better reporting of errors
-* Extensive code tidy up and restructuring
+* Set feedparser User Agent to Gopherfeed
+* Timeout after 30 seconds instead of hanging eternally
 
 v1.1 : March 7 2013
 -------------------
