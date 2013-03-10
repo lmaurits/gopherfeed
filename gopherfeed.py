@@ -101,7 +101,7 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
         feed_dir = os.path.join(directory, feed_slug)
         gophermap = os.path.join(feed_dir, "gophermap")
         if not os.path.exists(feed_dir):
-            os.mkdir(feed_dir)
+            os.makedirs(feed_dir)
         descr = feed.feed.title.replace("\t", "    ")
         mre = max([entry.updated_parsed for entry in feed.entries])
         mapline = "1%s\t%s\t%s\t%d\n" % (descr, feed_dir, hostname, port)
@@ -119,7 +119,7 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
         decorated_maplines.reverse()
 
     if not os.path.exists(directory):
-        os.mkdir(directory)
+        os.makedirs(directory)
     fp = codecs.open(os.path.join(directory, "gophermap"), "w", "UTF-8")
     for decoration, mapline in decorated_maplines:
         fp.write(mapline)
