@@ -110,7 +110,7 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
     for feed_url in feed_urls:
         feed_object = feedparser.parse(feed_url)
         if not feed_object.entries:
-            if feed_object.get("status", None) is not 200:
+            if feed_object.get("status", None) not in (200, None):
                 sys.stderr.write("Error fetching feed at %s (HTTP status %d)\n" % (feed_url, feed_object.status))
             elif isinstance(feed_object.get("bozo_exception", None), urllib2.URLError):
                 sys.stderr.write("Error fetching feed at %s (%s)\n" % (feed_url, str(feed_object.bozo_exception)))
