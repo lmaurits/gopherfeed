@@ -50,6 +50,7 @@ import feedparser
 import codecs
 import getopt
 import os
+import socket
 import sys
 import urllib2
 import xml
@@ -140,6 +141,11 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
 
 def main():
     """The gopherfeed command line application."""
+
+    # Without this, feedparser will happily wait until the heat death of the universe
+    # if something goes wrong connecting to a remote host
+    socket.setdefaulttimeout(30.0)
+
     feedfile = None
     directory = None
     hostname = None
