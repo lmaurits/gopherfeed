@@ -41,8 +41,7 @@ client as a basic feed aggregator.  This works best if you use a client which
 also has seamless HTTP/HTML support (e.g. lynx).
 
 Please report bugs to <luke@maurits.id.au> or at
-<https://github.com/lmaurits/gopherfeed/issues>
-"""
+<https://github.com/lmaurits/gopherfeed/issues>"""
 
 import gopherfeed
 
