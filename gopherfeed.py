@@ -14,11 +14,11 @@ import time
 feedparser.USER_AGENT = "Gopherfeed +https://github.com/lmaurits/gopherfeed"
 _TIME_FORMAT = "%Y-%m-%d %H:%M"
 
-def _gopherize_feed_object(feed_obj, timestamp=False):
+def gopherize_feed_object(feed_obj, timestamp=False, plug=True):
     """Return a gophermap string for a feed object produced by feedparser."""
     feed, entries = feed_obj.feed, feed_obj.entries
     if not entries:
-        return ""
+        raise Exception("Problem either fetching or parsing feed")
 
     maplines = []
     feed_title = feed.get("title", feed.get("link", "Untitled feed"))
@@ -26,6 +26,7 @@ def _gopherize_feed_object(feed_obj, timestamp=False):
     maplines.append(feed_title)
     if "description" in feed:
         maplines.append(feed.description.replace("\t","    "))
+    maplines.append("")
     
     timestamped_maplines = []
     for entry in entries:
@@ -43,19 +44,23 @@ def _gopherize_feed_object(feed_obj, timestamp=False):
     timestamped_maplines.reverse()
     for updated, mapline in timestamped_maplines:
         maplines.append(mapline)
-    if feed_obj.version.startswith("rss"):
-        feed_type = "RSS feed"
-    elif feed_obj.version.startswith("atom"):
-        feed_type = "Atom feed"
-    else:
-        feed_type = "Unknown feed type"
-    maplines.append("-"*70)
-    maplines.append("Converted from %s by Gopherfeed %s" % (feed_type, __version__))
+
+    if plug:
+        if feed_obj.version.startswith("rss"):
+            feed_type = "RSS feed"
+        elif feed_obj.version.startswith("atom"):
+            feed_type = "Atom feed"
+        else:
+            feed_type = "Unknown feed type"
+        maplines.append("_"*70)
+        plug_line = "Converted from %s by Gopherfeed %s" % (feed_type, __version__)
+        maplines.append(plug_line.rjust(70))
+
     return "\n".join(maplines)
 
-def gopherize_feed(feed_url, timestamp=False):
+def gopherize_feed(feed_url, timestamp=False, plug=True):
     """Return a gophermap string for the feed at feed_url."""
-    return _gopherize_feed_object(feedparser.parse(feed_url), timestamp)
+    return gopherize_feed_object(feedparser.parse(feed_url), timestamp, plug)
 
 def _slugify(feed):
     """Make a simple string from feed title, to use as a directory name."""
@@ -67,57 +72,31 @@ def _slugify(feed):
         slug = slug.lower()
     return slug
 
-def _read_feed_urls(filename):
-    """Return a list of URLs read from a file, one per line."""
-    feeds = []
-    fp = codecs.open(filename, "r", "UTF-8")
-    for line in fp:
-        # Ignore blank and commented lines
-        if line and not line.startswith("#"):
-            feeds.append(line)
-    fp.close()
-    return feeds
-
-def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
-        sort=None, timestamp=False):
+def build_feed_index(feed_objects, directory, hostname=None, port=70, sort=None):
     """
-    Read a file of URLs and generate a directory structure of gophermaps.
-
-    This method will read URLs from a file and then create a directory
-    structure, in which each feed gets its own directory.  Goperhmap files
-    will be created for each feed (in that feed's directory), along with one
-    master gophermap file at the root of the directory structure which acts
-    as an index to the others (using each feed's title as the descriptor).
+    Build a gophermap file in the specified directory, which presents an index
+    for all the feeds in feed_objects.
     """
     if not hostname:
         hostname = socket.getfqdn()
-    feeds = _read_feed_urls(feedfile)
     decorated_maplines = []
-    for index, feed_url in enumerate(feeds):
-        feed = feedparser.parse(feed_url)
-        if "title" not in feed.feed:
-            continue
-        feed_slug = _slugify(feed.feed)
+    for index, feed_obj in enumerate(feed_objects):
+        feed, entries = feed_obj.feed, feed_obj.entries
+        feed_slug = _slugify(feed)
         feed_dir = os.path.join(directory, feed_slug)
-        gophermap = os.path.join(feed_dir, "gophermap")
-        if not os.path.exists(feed_dir):
-            os.makedirs(feed_dir)
-        descr = feed.feed.title.replace("\t", "    ")
-        mre = max([entry.updated_parsed for entry in feed.entries])
-        mapline = "1%s\t%s\t%s\t%d\n" % (descr, feed_dir, hostname, port)
+        feed_title = feed.get("title", feed.get("link", "Untitled feed"))
+        feed_title = feed_title.replace("\t","    ")
+        mre = max([entry.updated_parsed for entry in entries])
+        mapline = "1%s\t%s\t%s\t%d\n" % (feed_title, feed_dir, hostname, port)
         if sort == "alpha":
-            decorated_maplines.append((feed.feed.title.lower(), mapline))
+            decorated_maplines.append((feed_title.lower(), mapline))
         elif sort == "time":
             decorated_maplines.append((mre, mapline))
         else:
             decorated_maplines.append((index, mapline))
-        fp2 = codecs.open(gophermap, "w", "UTF-8")
-        fp2.write(_gopherize_feed_object(feed, timestamp))
-        fp2.close()
     decorated_maplines.sort()
     if sort == "time":
         decorated_maplines.reverse()
-
     if not os.path.exists(directory):
         os.makedirs(directory)
     fp = codecs.open(os.path.join(directory, "gophermap"), "w", "UTF-8")

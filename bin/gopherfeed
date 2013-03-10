@@ -19,12 +19,13 @@ Options for feed file (2nd usage pattern):
                             (defaults to 70)
     -s SORT             Specify order in which feeds are listed in central
                             index.  Options are:
-                                ALPHA - sort alphabetically by title
-                                TIME - sort by time of most recent entry
+                                alpha - sort alphabetically by title
+                                time - sort by time of most recent entry
 
 Common options (1st and 2nd usage patterns):
 
     -t                  Timestamp feed entries in gophermap file
+    -x                  Exclude Gopherfeed version footer
 
 Note that in the 2nd pattern, gopherfeed should be run from within the
 Goper server's root directory, as GOPHER_DIR will be created (if necessary) in
@@ -45,22 +46,97 @@ Please report bugs to <luke@maurits.id.au> or at
 
 import gopherfeed
 
+import feedparser
+
 import codecs
 import getopt
+import os
 import sys
 
 def usage():
     """Print usage information."""
     print(__doc__)
 
+def gopherize_one_feed(feed_url, filename, timestamp, plug):
+    """
+    Build a gophermap for the feed at feed_url and either save it to a file
+    or print it to standard output.
+    """
+    try:
+        gophermap = gopherfeed.gopherize_feed(feed_url, timestamp=timestamp,
+                plug=plug)
+    except Exception as e:
+        sys.stderr.write("Problem fetching or parsing feed: %s\n" % feed_url)
+        exit(1)
+    if filename:
+        try:
+            with codecs.open(filename, "w", "UTF-8") as fp:
+                fp.write(gophermap)
+        except IOError as e:
+            sys.stderr.write("Could not write gophermap to file %s: %s\n" % (filename, e.strerror))
+            exit(1)
+    else:
+        print(gophermap)
+
+def _read_feed_urls(filename):
+    """Return a list of URLs read from a file, one per line."""
+    feeds = []
+    fp = codecs.open(filename, "r", "UTF-8")
+    for line in fp:
+        # Ignore blank and commented lines
+        if line and not line.startswith("#"):
+            feeds.append(line)
+    fp.close()
+    return feeds
+
+def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
+        sort=None, timestamp=False, plug=True):
+    """
+    Read a file of URLs and generate a directory structure of gophermaps.
+
+    This method will read URLs from a file and then create a directory
+    structure, in which each feed gets its own directory.  Goperhmap files
+    will be created for each feed (in that feed's directory), along with one
+    master gophermap file at the root of the directory structure which acts
+    as an index to the others (using each feed's title as the descriptor).
+    """
+    try:
+        feed_urls = _read_feed_urls(feedfile)
+    except IOError as e:
+        sys.stderr.write("Could not open URL file %s: %s" % (feedfile, e.strerr))
+        exit(1)
+    feed_objects = []
+    for feed_url in feed_urls:
+        feed_object = feedparser.parse(feed_url)
+        if not feed_object.entries:
+            sys.stderr.write("Error fetching or parsing feed at %s" % feed_url)
+            continue
+        feed_slug = gopherfeed._slugify(feed_object.feed)
+        gophermap_path = os.path.join(directory, feed_slug, "gophermap")
+        gophermap_text = gopherfeed.gopherize_feed_object(feed_object, timestamp, plug)
+        try:
+            with codecs.open(gophermap_path, "w", "UTF-8") as fp:
+                fp.write(gophermap_text)
+        except IOError as e:
+            sys.stderr.write("Could not write gophermap file %s: %s" % (gophermap_path, e.strerr))
+            continue
+        feed_objects.append(feed_object)
+    try:
+        gopherfeed.build_feed_index(feed_objects, directory, hostname, port, sort)
+    except IOError as e:
+        sys.stderr.write("Could not write gophermap file %s: %s" % (os.path.join(directory, "gophermap"), e.strerr))
+        exit(1)
+
 def main():
+    """The gopherfeed command line application."""
     feedfile = None
     directory = None
     hostname = None
     port = 70
     sort = None
     timestamp = False
-    opts, args = getopt.gnu_getopt(sys.argv[1:], "d:f:h:p:s:t")
+    plug = True
+    opts, args = getopt.gnu_getopt(sys.argv[1:], "d:f:h:p:s:tx")
     for option, value in opts:
         if option == "-d":
             directory = value
@@ -74,33 +150,22 @@ def main():
             sort = value
         elif option == "-t":
             timestamp = True
+        elif option == "-x":
+            plug = False
 
     if sort not in (None, "alpha", "time"):
         sys.stderr.write("Ignoring unknown sort option: %s\n" % sort)
         sort = None
 
     if feedfile and directory:
-        try:
-            gopherfeed.gopherize_feed_file(feedfile, directory, hostname,
-                    port=port, sort=sort, timestamp=True)
-        except IOError as e:
-            sys.stderr.write("Encountered error handling feed file: %s" % e.strerror)
-            exit(1)
+        gopherize_feed_file(feedfile, directory, hostname=hostname, port=port,
+                sort=sort, timestamp=timestamp, plug=plug)
     elif not feedfile and not directory and len(args) in (1, 2):
         feed_url = args[0]
-        gophermap = gopherfeed.gopherize_feed(feed_url, timestamp=True)
         if len(args) == 2:
-            filename = args[1]
-            try:
-                fp = codecs.open(filename, "w", "UTF-8")
-                fp.write(gophermap)
-            except IOError as e:
-                sys.stderr.write("Could not write gophermap to file %s: %s" % (filename, e.strerror))
-                exit(1)
-            finally:
-                fp.close()
+            gopherize_one_feed(feed_url, args[1], timestamp=timestamp, plug=plug)
         else:
-            print(gophermap)
+            gopherize_one_feed(feed_url, None, timestamp=timestamp, plug=plug)
     else:
         usage()
 
