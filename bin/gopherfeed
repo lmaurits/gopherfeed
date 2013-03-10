@@ -104,7 +104,7 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
     try:
         feed_urls = _read_feed_urls(feedfile)
     except IOError as e:
-        sys.stderr.write("Could not open URL file %s: %s\n" % (feedfile, e.strerr))
+        sys.stderr.write("Could not open URL file %s: %s\n" % (feedfile, e.strerror))
         exit(1)
     feed_objects = []
     for feed_url in feed_urls:
@@ -126,13 +126,13 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
             with codecs.open(gophermap_path, "w", "UTF-8") as fp:
                 fp.write(gophermap_text)
         except IOError as e:
-            sys.stderr.write("Could not write gophermap file %s: %s\n" % (gophermap_path, e.strerr))
+            sys.stderr.write("Could not write gophermap file %s: %s\n" % (gophermap_file, e.strerror))
             continue
         feed_objects.append(feed_object)
     try:
         gopherfeed.build_feed_index(feed_objects, directory, hostname, port, sort)
     except IOError as e:
-        sys.stderr.write("Could not write gophermap file %s: %s\n" % (os.path.join(directory, "gophermap"), e.strerr))
+        sys.stderr.write("Could not write gophermap file %s: %s\n" % (os.path.join(directory, "gophermap"), e.strerror))
         exit(1)
 
 def main():
