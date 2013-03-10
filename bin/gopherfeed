@@ -120,10 +120,13 @@ def gopherize_feed_file(feedfile, directory, hostname=None, port=70,
                 sys.stderr.write("Feed at %s seems to be empty - skipping.\n" % (feed_url,))
             continue
         feed_slug = gopherfeed._slugify(feed_object.feed)
-        gophermap_path = os.path.join(directory, feed_slug, "gophermap")
+        gophermap_dir = os.path.join(directory, feed_slug)
+        gophermap_file = os.path.join(gophermap_dir, "gophermap")
         gophermap_text = gopherfeed.gopherize_feed_object(feed_object, timestamp, plug)
+        if not os.path.exists(gophermap_dir):
+            os.makedirs(gophermap_dir)
         try:
-            with codecs.open(gophermap_path, "w", "UTF-8") as fp:
+            with codecs.open(gophermap_file, "w", "UTF-8") as fp:
                 fp.write(gophermap_text)
         except IOError as e:
             sys.stderr.write("Could not write gophermap file %s: %s\n" % (gophermap_file, e.strerror))
