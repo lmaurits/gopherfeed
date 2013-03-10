@@ -1,7 +1,7 @@
 v1.2 : March x 2013
 -------------------
 * Added option to print header line at top of index gophermap
-* Better reporting of per-feed errors
+* Better reporting and handling of per-feed errors
 * Extensive code tidy up and restructuring
 * Insert blank line between feed title/description and first entry
 * Print Gopherfeed version number footer at bottom of gopermaps
