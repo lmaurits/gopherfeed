@@ -85,7 +85,7 @@ def _read_feed_urls(filename):
     for line in fp:
         # Ignore blank and commented lines
         if line and not line.startswith("#"):
-            feeds.append(line)
+            feeds.append(line.strip())
     fp.close()
     return feeds
 
