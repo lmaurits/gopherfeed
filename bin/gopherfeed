@@ -140,7 +140,11 @@ def gopherize_feed_file(feedfile, directory, header=None, hostname=None,
         gophermap_text = gopherfeed.gopherize_feed_object(feed_object,
                 timestamp, plug)
         if not os.path.exists(gophermap_dir):
-            os.makedirs(gophermap_dir)
+            try:
+                os.makedirs(gophermap_dir)
+            except OSError as e:
+                sys.stderr.write("Could not create feed directory %s: %s\n" % (gophermap_dir, e.strerror))
+                continue
         try:
             with codecs.open(gophermap_file, "w", "UTF-8") as fp:
                 fp.write(gophermap_text)
@@ -158,7 +162,7 @@ def gopherize_feed_file(feedfile, directory, header=None, hostname=None,
         with codecs.open(index_path, "w", "UTF-8") as fp:
             fp.write(indexmap)
             fp.write("\n")
-    except IOError as e:
+    except (IOError, OSError) as e:
         sys.stderr.write("Could not write gophermap file %s: %s\n" % (os.path.join(directory, "gophermap"), e.strerror))
         exit(1)
 
