@@ -67,7 +67,7 @@ def _express_error(feed_object, feed_url):
     """Write a message to stderr describing what went wrong with feed_object."""
     if feed_object.get("status", None) not in (200, None):
         strerror = "Error fetching feed at %s (HTTP status %d)" % (feed_url, feed_object.status)
-    elif isinstance(feed_object.get("bozo_exception", None),urllib2.URLError):
+    elif isinstance(feed_object.get("bozo_exception", None), urllib2.URLError):
         strerror = "Error fetching feed at %s (%s)" % (feed_url, str(feed_object.bozo_exception))
     elif isinstance(feed_object.get("bozo_exception", None), xml.sax._exceptions.SAXParseException):
         strerror = "Error parsing feed at %s (are you sure this is a feed?)" % (feed_url,)
