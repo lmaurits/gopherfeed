@@ -149,9 +149,15 @@ def gopherize_feed_file(feedfile, directory, header=None, hostname=None,
             sys.stderr.write("Could not write gophermap file %s: %s\n" % (gophermap_file, e.strerror))
             continue
         feed_objects.append(feed_object)
+    indexmap = gopherfeed.build_feed_index(feed_objects, directory, header,
+            hostname, port, sort, plug)
     try:
-        gopherfeed.build_feed_index(feed_objects, directory, header, hostname,
-                port, sort, plug)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        index_path = os.path.join(directory, "gophermap")
+        with codecs.open(index_path, "w", "UTF-8") as fp:
+            fp.write(indexmap)
+            fp.write("\n")
     except IOError as e:
         sys.stderr.write("Could not write gophermap file %s: %s\n" % (os.path.join(directory, "gophermap"), e.strerror))
         exit(1)

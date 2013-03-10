@@ -88,7 +88,7 @@ def build_feed_index(feed_objects, directory, header=None, hostname=None,
         feed_title = feed.get("title", feed.get("link", "Untitled feed"))
         feed_title = feed_title.replace("\t","    ")
         mre = max([entry.updated_parsed for entry in entries])
-        mapline = "1%s\t%s\t%s\t%d\n" % (feed_title, feed_dir, hostname, port)
+        mapline = "1%s\t%s\t%s\t%d" % (feed_title, feed_dir, hostname, port)
         if sort == "alpha":
             decorated_maplines.append((feed_title.lower(), mapline))
         elif sort == "time":
@@ -98,15 +98,15 @@ def build_feed_index(feed_objects, directory, header=None, hostname=None,
     decorated_maplines.sort()
     if sort == "time":
         decorated_maplines.reverse()
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    fp = codecs.open(os.path.join(directory, "gophermap"), "w", "UTF-8")
+    maplines = []
     if header:
-        fp.write(header+"\n\n")
+        maplines.append(header)
+        maplines.append("")
     for decoration, mapline in decorated_maplines:
-        fp.write(mapline)
+        maplines.append(mapline)
     if plug:
-        fp.write("_"*70+"\n")
+        maplines.append("_"*70)
         plug_line = "Converted from RSS/Atom feeds by Gopherfeed %s" % __version__
-        fp.write(plug_line.rjust(70) + "\n")
-    fp.close()
+        maplines.append(plug_line.rjust(70))
+
+    return "\n".join(maplines)
