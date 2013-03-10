@@ -27,6 +27,7 @@ Options for feed file (2nd usage pattern):
 Common options (1st and 2nd usage patterns):
 
     -t                  Timestamp feed entries in gophermap file
+    -x                  Exclude Gopherfeed version footer
 
 Note that in the 2nd pattern, gopherfeed should be run from within the
 Goper server's root directory, as GOPHER_DIR will be created (if necessary) in
