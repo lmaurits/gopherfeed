@@ -55,11 +55,16 @@ import os
 import socket
 import sys
 import urllib2
+import time
 import xml
 
 def usage():
     """Print usage information."""
     print(__doc__)
+
+def _detect_timeout(feed_object):
+    """Return True if a feed failed due to a timeout."""
+    return "urlopen error timed out" in str(feed_object.get("bozo_exception", None))
 
 def _detect_error(feed_object):
     """Return True if something appears to have gone wrong in parsing a feed."""
@@ -132,8 +137,21 @@ def gopherize_feed_file(feedfile, directory, header=None, hostname=None,
     for feed_url in feed_urls:
         feed_object = feedparser.parse(feed_url)
         if _detect_error(feed_object):
-            _express_error(feed_object, feed_url)
-            continue
+            if_detect_timeout(feed_object):
+                # In case of timeout, try once more after a short delay
+                # This is a little ugly, but it should cut down on annoying
+                # cron emails once a week or so
+                print("Timed out once...")
+                time.sleep(10)
+                feed_object = feedparser.parse(feed_url)
+                if _detect_error(feed_object):
+                    _express_error(feed_object, feed_url)
+                    continue
+                else:
+                    print("Recovered! \m/")
+            else:
+                _express_error(feed_object, feed_url)
+                continue
         feed_slug = gopherfeed._slugify(feed_object.feed)
         gophermap_dir = os.path.join(directory, feed_slug)
         gophermap_file = os.path.join(gophermap_dir, "gophermap")
