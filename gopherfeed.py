@@ -14,6 +14,21 @@ import time
 feedparser.USER_AGENT = "Gopherfeed +https://github.com/lmaurits/gopherfeed"
 _TIME_FORMAT = "%Y-%m-%d %H:%M"
 
+def _build_mapline(entry, timestamp=False, feed_object=None):
+    """Return one line of a Gophermap, built from one feed entry bject."""
+    filetype = "h"
+    descr = entry.title.replace("\t","   ")
+    if feed_object:
+        descr = "%s: %s" % (feed_object.get("title", "Untitled feed"), descr)
+    if timestamp:
+        if "published_parsed" in entry:
+            timestring = time.strftime(_TIME_FORMAT, entry.published_parsed)
+        elif "updated_parsed" in entry:
+            timestring = time.strftime(_TIME_FORMAT, entry.updated_parsed)
+        descr = "[%s] %s" % (timestring, descr)
+    mapline = "%s%s\tURL:%s" % (filetype, descr, entry.link)
+    return mapline
+
 def gopherize_feed_object(feed_obj, timestamp=False, plug=True):
     """Return a gophermap string for a feed object produced by feedparser."""
     feed, entries = feed_obj.feed, feed_obj.entries
@@ -30,12 +45,7 @@ def gopherize_feed_object(feed_obj, timestamp=False, plug=True):
     
     timestamped_maplines = []
     for entry in entries:
-        filetype = "h"
-        descr = entry.title.replace("\t","   ")
-        if timestamp:
-            timestring = time.strftime(_TIME_FORMAT, entry.updated_parsed)
-            descr = "[%s] %s" % (timestring, descr)
-        mapline = "%s%s\tURL:%s" % (filetype, descr, entry.link)
+        mapline = _build_mapline(entry, timestamp)
         timestamped_maplines.append((entry.updated_parsed, mapline))
 
     # Entries are not guaranteed to appear in feed in chronological order,
