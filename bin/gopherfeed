@@ -110,7 +110,7 @@ def _read_feed_urls(filename):
     feeds = []
     fp = codecs.open(filename, "r", "UTF-8")
     for line in fp:
-        line = line.split()
+        line = line.strip()
         # Ignore blank and commented lines
         if line and not line.startswith("#"):
             line = line.strip()
