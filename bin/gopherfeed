@@ -112,7 +112,11 @@ def _read_feed_urls(filename):
     for line in fp:
         # Ignore blank and commented lines
         if line and not line.startswith("#"):
-            feeds.append(line.strip())
+            line = line.strip()
+            # Use only first column of file (compatibility with newsbeuter)
+            if len(line.split()) > 1:
+                line = line.split()[0]
+            feeds.append(line)
     fp.close()
     return feeds
 
