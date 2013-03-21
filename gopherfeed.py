@@ -121,7 +121,7 @@ def build_feed_index(feed_objects, directory, header=None, hostname=None,
 
     return "\n".join(maplines)
 
-def combine_feed_objects(feed_objs, max_entries=50, timestamp=False, plug=True):
+def combine_feed_objects(feed_objs, max_entries=20, timestamp=False, plug=True):
     """
     Build a single gophermap string, combining the entries from all
     provided feed objects.
