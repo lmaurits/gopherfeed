@@ -141,21 +141,8 @@ def gopherize_feed_file(feedfile, directory, header=None, hostname=None,
     for feed_url in feed_urls:
         feed_object = feedparser.parse(feed_url)
         if _detect_error(feed_object):
-            if _detect_timeout(feed_object):
-                # In case of timeout, try once more after a short delay
-                # This is a little ugly, but it should cut down on annoying
-                # cron emails once a week or so
-                print("Timed out once...")
-                time.sleep(10)
-                feed_object = feedparser.parse(feed_url)
-                if _detect_error(feed_object):
-                    _express_error(feed_object, feed_url)
-                    continue
-                else:
-                    print("Recovered! \m/")
-            else:
-                _express_error(feed_object, feed_url)
-                continue
+            _express_error(feed_object, feed_url)
+            continue
         feed_slug = gopherfeed._slugify(feed_object.feed)
         gophermap_dir = os.path.join(directory, feed_slug)
         gophermap_file = os.path.join(gophermap_dir, "gophermap")
