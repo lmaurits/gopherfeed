@@ -184,6 +184,42 @@ def gopherize_feed_file(feedfile, directory, header=None, hostname=None,
         sys.stderr.write("Could not write gophermap file %s: %s\n" % (os.path.join(directory, "gophermap"), e.strerror))
         exit(1)
 
+def combine_feed_file(feedfile, filename=None, sort=None, timestamp=False, plug=True):
+    """
+    Read a file of URLs and generate a gophermap containing the latest entries
+    from all feeds.
+    """
+    try:
+        feed_urls = _read_feed_urls(feedfile)
+    except IOError as e:
+        sys.stderr.write("Could not open URL file %s: %s\n" % (feedfile,
+            e.strerror))
+        exit(1)
+    feed_objects = []
+    for feed_url in feed_urls:
+        feed_object = feedparser.parse(feed_url)
+        if _detect_error(feed_object):
+            _express_error(feed_object, feed_url)
+            continue
+        else:
+            feed_objects.append(feed_object)
+
+    gophermap = gopherfeed.combine_feed_objects(feed_objects, timestamp=timestamp, plug=plug)
+
+    if filename:
+        try:
+            dirname = os.path.dirname(filename)
+            if dirname and not os.path.exists(dirname):
+                os.makedirs(dirname)
+            with codecs.open(filename, "w", "UTF-8") as fp:
+                fp.write(gophermap)
+                fp.write("\n")
+        except (IOError, OSError) as e:
+            sys.stderr.write("Could not write gophermap file %s: %s\n" % (filename, e.strerror))
+            exit(1)
+    else:
+        print(gophermap)
+
 def main():
     """The gopherfeed command line application."""
 
@@ -226,6 +262,11 @@ def main():
         gopherize_feed_file(feedfile, directory, header=index_header,
                 hostname=hostname, port=port, sort=sort, timestamp=timestamp,
                 plug=plug)
+    elif feedfile and not directory:
+        if len(args) == 1:
+            combine_feed_file(feedfile, filename=args[0], sort=sort, timestamp=timestamp, plug=plug)
+        else:
+            combine_feed_file(feedfile, filename=None, sort=sort, timestamp=timestamp, plug=plug)
     elif not feedfile and not directory and len(args) in (1, 2):
         feed_url = args[0]
         if len(args) == 2:

@@ -120,3 +120,32 @@ def build_feed_index(feed_objects, directory, header=None, hostname=None,
         maplines.append(plug_line.rjust(70))
 
     return "\n".join(maplines)
+
+def combine_feed_objects(feed_objs, max_entries=50, timestamp=False, plug=True):
+    """
+    Build a single gophermap string, combining the entries from all
+    provided feed objects.
+    """
+    timestamped_maplines = []
+    for feed_obj in feed_objs:
+        feed, entries = feed_obj.feed, feed_obj.entries
+        for entry in entries:
+            if "published_parsed" in entry:
+                mapline = _build_mapline(entry, timestamp, feed)
+                timestamped_maplines.append((entry.published_parsed, mapline))
+            elif "updated_parsed" in entry:
+                mapline = _build_mapline(entry, timestamp, feed)
+                timestamped_maplines.append((entry.updated_parsed, mapline))
+   
+    timestamped_maplines.sort()
+    timestamped_maplines.reverse()
+    maplines = []
+    for updated, mapline in timestamped_maplines[:max_entries]:
+        maplines.append(mapline)
+
+    if plug:
+        maplines.append("_"*70)
+        plug_line = "Converted from RSS/Atom feeds by Gopherfeed %s" % __version__
+        maplines.append(plug_line.rjust(70))
+    
+    return "\n".join(maplines)
