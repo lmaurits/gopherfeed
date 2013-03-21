@@ -176,7 +176,7 @@ def gopherize_feed_file(feedfile, directory, header=None, hostname=None,
         sys.stderr.write("Could not write gophermap file %s: %s\n" % (os.path.join(directory, "gophermap"), e.strerror))
         exit(1)
 
-def combine_feed_file(feedfile, filename=None, sort=None, timestamp=False, plug=True):
+def combine_feed_file(feedfile, filename=None, entries=20, sort=None, timestamp=False, plug=True):
     """
     Read a file of URLs and generate a gophermap containing the latest entries
     from all feeds.
@@ -196,7 +196,7 @@ def combine_feed_file(feedfile, filename=None, sort=None, timestamp=False, plug=
         else:
             feed_objects.append(feed_object)
 
-    gophermap = gopherfeed.combine_feed_objects(feed_objects, timestamp=timestamp, plug=plug)
+    gophermap = gopherfeed.combine_feed_objects(feed_objects, max_entries=entries, timestamp=timestamp, plug=plug)
 
     if filename:
         try:
@@ -224,10 +224,11 @@ def main():
     directory = None
     hostname = None
     port = 70
+    entries = 20
     sort = None
     timestamp = False
     plug = True
-    opts, args = getopt.gnu_getopt(sys.argv[1:], "d:f:h:i:p:s:tx")
+    opts, args = getopt.gnu_getopt(sys.argv[1:], "d:f:h:i:n:p:s:tx")
     for option, value in opts:
         if option == "-d":
             directory = value
@@ -237,6 +238,8 @@ def main():
             hostname = value
         elif option == "-i":
             index_header = value
+        elif option == "-n":
+            entries = int(value)
         elif option == "-p":
             port = int(value)
         elif option == "-s":
@@ -256,7 +259,7 @@ def main():
                 plug=plug)
     elif feedfile and not directory:
         if len(args) == 1:
-            combine_feed_file(feedfile, filename=args[0], sort=sort, timestamp=timestamp, plug=plug)
+            combine_feed_file(feedfile, filename=args[0], entries=entries, sort=sort, timestamp=timestamp, plug=plug)
         else:
             combine_feed_file(feedfile, filename=None, sort=sort, timestamp=timestamp, plug=plug)
     elif not feedfile and not directory and len(args) in (1, 2):
