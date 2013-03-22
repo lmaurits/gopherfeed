@@ -272,7 +272,7 @@ def main():
         if len(args) == 1:
             combine_feed_file(feedfile, filename=args[0], entries=entries, sort=sort, timestamp=timestamp, plug=plug)
         else:
-            combine_feed_file(feedfile, filename=None, sort=sort, timestamp=timestamp, plug=plug)
+            combine_feed_file(feedfile, filename=None, entries=entries, sort=sort, timestamp=timestamp, plug=plug)
     elif not feedfile and not directory and len(args) in (1, 2):
         feed_url = args[0]
         if len(args) == 2:
