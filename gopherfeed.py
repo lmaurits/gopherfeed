@@ -128,7 +128,6 @@ def combine_feed_objects(feed_objs, max_entries=20, timestamp=False, plug=True):
     Build a single gophermap string, combining the entries from all
     provided feed objects.
     """
-    print("Final func got n: %d" % max_entries)
     timestamped_maplines = []
     for feed_obj in feed_objs:
         feed, entries = feed_obj.feed, feed_obj.entries
