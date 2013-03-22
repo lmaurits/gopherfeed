@@ -22,9 +22,11 @@ def _build_mapline(entry, timestamp=False, feed_object=None):
         descr = "%s: %s" % (feed_object.get("title", "Untitled feed"), descr)
     if timestamp:
         if "published_parsed" in entry:
-            timestring = time.strftime(_TIME_FORMAT, entry.published_parsed)
+            epoch = time.mktime(entry.published_parsed)
         elif "updated_parsed" in entry:
-            timestring = time.strftime(_TIME_FORMAT, entry.updated_parsed)
+            epoch = time.mktime(entry.updated_parsed)
+        timestamp = time.localtime(epoch)
+        timestring = time.strftime(_TIME_FORMAT, timestamp)
         descr = "[%s] %s" % (timestring, descr)
     mapline = "%s%s\tURL:%s" % (filetype, descr, entry.link)
     return mapline
@@ -126,16 +128,17 @@ def combine_feed_objects(feed_objs, max_entries=20, timestamp=False, plug=True):
     Build a single gophermap string, combining the entries from all
     provided feed objects.
     """
+    print("Final func got n: %d" % max_entries)
     timestamped_maplines = []
     for feed_obj in feed_objs:
         feed, entries = feed_obj.feed, feed_obj.entries
         for entry in entries:
             if "published_parsed" in entry:
                 mapline = _build_mapline(entry, timestamp, feed)
-                timestamped_maplines.append((entry.published_parsed, mapline))
+                timestamped_maplines.append((time.mktime(entry.published_parsed), mapline))
             elif "updated_parsed" in entry:
                 mapline = _build_mapline(entry, timestamp, feed)
-                timestamped_maplines.append((entry.updated_parsed, mapline))
+                timestamped_maplines.append((time.mktime(entry.updated_parsed), mapline))
    
     timestamped_maplines.sort()
     timestamped_maplines.reverse()
