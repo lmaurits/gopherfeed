@@ -48,7 +48,10 @@ def gopherize_feed_object(feed_obj, timestamp=False, plug=True):
     timestamped_maplines = []
     for entry in entries:
         mapline = _build_mapline(entry, timestamp)
-        timestamped_maplines.append((entry.updated_parsed, mapline))
+        if "published_parsed" in entry:
+            timestamped_maplines.append((time.mktime(entry.published_parsed), mapline))
+        elif "updated_parsed" in entry:
+            timestamped_maplines.append((time.mktime(entry.updated_parsed), mapline))
 
     # Entries are not guaranteed to appear in feed in chronological order,
     # so let's sort them
@@ -99,7 +102,10 @@ def build_feed_index(feed_objects, directory, header=None, hostname=None,
         feed_dir = os.path.join(directory, feed_slug)
         feed_title = feed.get("title", feed.get("link", "Untitled feed"))
         feed_title = feed_title.replace("\t","    ")
-        mre = max([entry.updated_parsed for entry in entries])
+        if "published_parsed" in entry:
+            mre = max([time.mktime(entry.published_parsed) for entry in entries])
+        elif "updated_parsed" in entry:
+            mre = max([time.mktime(entry.updated_parsed) for entry in entries])
         mapline = "1%s\t%s\t%s\t%d" % (feed_title, feed_dir, hostname, port)
         if sort == "alpha":
             decorated_maplines.append((feed_title.lower(), mapline))
