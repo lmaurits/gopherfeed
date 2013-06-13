@@ -138,6 +138,9 @@ def combine_feed_objects(feed_objs, max_entries=20, timestamp=False, plug=True):
     for feed_obj in feed_objs:
         feed, entries = feed_obj.feed, feed_obj.entries
         for entry in entries:
+            # Oddly enough, you occasionally find feed entries without a link..
+            if "link" not in entry:
+                continue
             if "published_parsed" in entry:
                 mapline = _build_mapline(entry, timestamp, feed)
                 timestamped_maplines.append((time.mktime(entry.published_parsed), mapline))
